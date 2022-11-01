@@ -61,3 +61,22 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
+.idea
+lfs/
+Recordings/
+UISource/
+AssetHunterBuild/
+SerializedBuildInfo/
+Screenshots/
+Xcode-Shop/
+UserSettings/Layouts
+.DS_Store
+
+UserSettings/
+
+ServerData/
+/[Aa]ssets/[Aa]sset[Bb]undles/
+Assets/AssetBundles
+Assets/RiderFlow.UserData
+Assets/BuildReports/
+Xcode_BurstDebugInformation_DoNotShip
