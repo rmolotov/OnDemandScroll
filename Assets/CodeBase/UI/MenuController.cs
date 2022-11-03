@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using CodeBase.Extensions;
+using UnityEngine;
 using UnityEngine.UI;
 using CodeBase.Infrastructure;
 
@@ -14,23 +15,60 @@ namespace CodeBase.UI
 
         [SerializeField] private MenuItemDetailsPopup menuItemDetailsPopup;
         [SerializeField] private GridLayoutGroup itemsContainer;
+        [SerializeField] private ScrollRect scrollView;
         [SerializeField] private VerticalLayoutGroup buttonsContainer;
+        
+        [SerializeField] private GameObject itemSlopPrefab;
+        [SerializeField] private Sprite defSprite;
+
+        public int itemsCount;
 
         private void Awake()
         {
             SetLayout();
-            
-            //for debug layout and interaction
-            foreach (var menuItemView in itemsContainer.GetComponentsInChildren<MenuItemView>())
-                menuItemView.OnClick += arg => menuItemDetailsPopup.InitAndShow(arg, arg);
+            CalcViewportSettings();
+            SpawnCells();
         }
-        
+
+        public void ScrollToStart() => 
+            scrollView.ScrollToTop();
+
+        public void ScrollToEnd() => 
+            scrollView.ScrollToBottom();
+
         private void SetLayout()
         {
             var screenHeight = DeviceInfoService.Instance.GetScreenHeight();
 
             SetGridLayout(screenHeight);
             SetButtonLayout(screenHeight);
+        }
+
+        private void CalcViewportSettings()
+        {
+            var cells = GetItemsCount();
+            
+            var columns = itemsContainer.RowCapacity();
+            var rows = itemsContainer.RowsCount(cells);
+            var lastRow = itemsContainer.CellsInLastRow(cells);
+            
+            Debug.Log($"Grid is {rows} * {columns} with {lastRow} cells in last row for {cells} cells in total");
+        }
+
+        private void SpawnCells()
+        {
+            for (var i = 0; i < itemsCount; i++)
+            {
+                var view = Instantiate(itemSlopPrefab, itemsContainer.transform).GetComponent<MenuItemView>();
+                view.Construct(defSprite);
+                view.OnClick += arg => menuItemDetailsPopup.InitAndShow(arg, arg);
+            }
+        }
+
+        //todo: move to resources service;
+        private int GetItemsCount()
+        {
+            return itemsCount;
         }
 
         private void SetGridLayout(float screenHeight)

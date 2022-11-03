@@ -7,14 +7,17 @@ namespace CodeBase.UI
     [RequireComponent(typeof(Button))]
     public class MenuItemView : MonoBehaviour
     {
-        [SerializeField] private string spriteName;
+        [SerializeField] private Image itemImage;
+        [SerializeField] private Button itemButton;
         
         public event Action<string> OnClick;
 
-        private void Awake()
+        public void Construct(Sprite sprite)
         {
-            var button = GetComponent<Button>();
-            button.onClick.AddListener(() => OnClick?.Invoke(spriteName));
+            itemImage.sprite = sprite;
+            itemButton.onClick.AddListener(
+                () => OnClick?.Invoke(sprite.name)
+            );
         }
     }
 }
