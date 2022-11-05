@@ -1,7 +1,10 @@
-﻿using CodeBase.Extensions;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using CodeBase.Infrastructure;
+using CodeBase.Infrastructure.AssetsManagement;
+using CodeBase.Extensions;
 
 namespace CodeBase.UI
 {
@@ -17,14 +20,15 @@ namespace CodeBase.UI
         [SerializeField] private GridLayoutGroup itemsContainer;
         [SerializeField] private ScrollRect scrollView;
         [SerializeField] private VerticalLayoutGroup buttonsContainer;
-        
         [SerializeField] private GameObject itemSlopPrefab;
-        [SerializeField] private Sprite defSprite;
 
-        public int itemsCount;
+        private List<string> _spritesAssets;
 
-        private void Awake()
+        private async void Awake()
         {
+            //TODO: move to bootstrap scene, addressables init inside!
+            _spritesAssets = await GetSpritesAssets();
+            
             SetLayout();
             CalcViewportSettings();
             SpawnCells();
@@ -46,29 +50,30 @@ namespace CodeBase.UI
 
         private void CalcViewportSettings()
         {
-            var cells = GetItemsCount();
-            
             var columns = itemsContainer.RowCapacity();
-            var rows = itemsContainer.RowsCount(cells);
-            var lastRow = itemsContainer.CellsInLastRow(cells);
+            var rows = itemsContainer.RowsCount(_spritesAssets.Count);
+            var lastRow = itemsContainer.CellsInLastRow(_spritesAssets.Count);
+            var visibleRows = itemsContainer.VisibleRows();
             
-            Debug.Log($"Grid is {rows} * {columns} with {lastRow} cells in last row for {cells} cells in total");
+            Debug.Log($"Grid is {rows} * {columns} with {lastRow} cells in last row and {visibleRows} visibleRows for {_spritesAssets.Count} cells in total");
         }
 
         private void SpawnCells()
         {
-            for (var i = 0; i < itemsCount; i++)
+            for (var i = 0; i < _spritesAssets.Count; i++)
             {
+                var spriteName = _spritesAssets[i];
                 var view = Instantiate(itemSlopPrefab, itemsContainer.transform).GetComponent<MenuItemView>();
-                view.Construct(defSprite);
-                view.OnClick += arg => menuItemDetailsPopup.InitAndShow(arg, arg);
+                
+                view.Construct(spriteName);
+                view.OnClick += _ => menuItemDetailsPopup.InitAndShow(spriteName, spriteName);
             }
         }
 
-        //todo: move to resources service;
-        private int GetItemsCount()
+        //TODO: move to to bootstrap scene;
+        private async Task<List<string>> GetSpritesAssets()
         {
-            return itemsCount;
+            return await AddressablesService.Instance.GetAddressablesList<Sprite>();
         }
 
         private void SetGridLayout(float screenHeight)

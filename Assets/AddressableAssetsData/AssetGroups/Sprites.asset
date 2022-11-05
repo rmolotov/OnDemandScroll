@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Sprites
+  m_EditorClassIdentifier: 
+  m_GroupName: Sprites
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 4672d6abd47528d40803d6df2b4cc7fd
+  m_SerializeEntries:
+  - m_GUID: 701258794f53e294580259f5a0ca68e9
+    m_Address: btn-arrow-down-pressed
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - default
+  - m_GUID: 31b86cebfeadf3a4dab6c1b242ba83d0
+    m_Address: btn-arrow-up-pressed
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - default
+  - m_GUID: eeb2b27322b1dd144be1fde766a52919
+    m_Address: btn-back-normal
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - default
+  - m_GUID: e1acb90591445554dae77625ed1ecce0
+    m_Address: btn-arrow-up-normal
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - default
+  - m_GUID: 794f8555d057f7845aee66ddda88d0dc
+    m_Address: bg-pattern
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - default
+  - m_GUID: db11ab656ae82e7469e4abdb91b512ae
+    m_Address: btn-arrow-down-normal
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - default
+  - m_GUID: 382fff1ee563a4a45a4d27cb29521441
+    m_Address: btn-back-pressed
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - default
+  - m_GUID: eda57a16b2b15d646877d8651d96b358
+    m_Address: img-placeholder
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - default
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: c5c7acd3e7fd51948aa6aee828dbb442, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: cd8e05091d54b0c42935adfeaaa81a09, type: 2}

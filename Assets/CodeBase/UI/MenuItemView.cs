@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
+using CodeBase.Infrastructure.AssetsManagement;
 
 namespace CodeBase.UI
 {
@@ -12,11 +13,12 @@ namespace CodeBase.UI
         
         public event Action<string> OnClick;
 
-        public void Construct(Sprite sprite)
+        
+        public async void Construct(string spriteName)
         {
-            itemImage.sprite = sprite;
+            itemImage.sprite = await AddressablesService.Instance.GetSpriteById(spriteName);
             itemButton.onClick.AddListener(
-                () => OnClick?.Invoke(sprite.name)
+                () => OnClick?.Invoke(spriteName)
             );
         }
     }

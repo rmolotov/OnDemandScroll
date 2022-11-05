@@ -24,9 +24,7 @@ namespace CodeBase.Extensions
                     - layoutGroup.padding.right
                     + layoutGroup.spacing.x;
             
-            return Mathf.FloorToInt(
-                w / (layoutGroup.cellSize.x + layoutGroup.spacing.x)
-            );
+            return Mathf.FloorToInt(w / (layoutGroup.cellSize.x + layoutGroup.spacing.x));
         }
 
         public static int RowsCount(this GridLayoutGroup layoutGroup, int itemsCount =-1)
@@ -46,6 +44,23 @@ namespace CodeBase.Extensions
             
             var columns = layoutGroup.RowCapacity();
             return itemsCount % columns;
+        }
+        
+        public static int VisibleRows(this GridLayoutGroup layoutGroup)
+        {
+            var scrollRect = layoutGroup.GetComponentInParent<ScrollRect>();
+            if (scrollRect == null)
+            {
+                Debug.LogWarning("Target GridLayoutGroup has no ScrollRect in parent RectTransform");
+                return -1;
+            }
+            
+            var h = scrollRect.viewport.rect.height
+                    - layoutGroup.padding.top
+                    - layoutGroup.padding.bottom
+                    + layoutGroup.spacing.y;
+            
+            return 1 + Mathf.CeilToInt(h / (layoutGroup.cellSize.y + layoutGroup.spacing.y));
         }
 
         #endregion

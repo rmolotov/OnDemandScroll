@@ -13,6 +13,7 @@ namespace CodeBase.UI
 
         [SerializeField] private CanvasGroup canvasGroup;
 
+        
         private void Awake() => 
             SetVisible(false);
 

@@ -14,6 +14,7 @@ namespace CodeBase.Infrastructure
         
         [SerializeField] private CanvasScaler canvasScaler;
 
+        
         public float GetScreenHeight() =>
             canvasScaler
                 ? canvasScaler.referenceResolution.y

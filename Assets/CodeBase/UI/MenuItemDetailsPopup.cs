@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using CodeBase.Infrastructure;
+using CodeBase.Infrastructure.AssetsManagement;
 
 namespace CodeBase.UI
 {
@@ -11,10 +12,10 @@ namespace CodeBase.UI
         private const float TextSize = 0.08f;
         private const float ButtonPadding = 0.05f;
         
-        [SerializeField] private CanvasScaler canvasScaler;
         [SerializeField] private Image itemImage;
         [SerializeField] private RectTransform textContainer;
 
+        
         public override async void InitAndShow<T>(T data, string text = "")
         {
             var spriteName = data as string;
@@ -27,7 +28,7 @@ namespace CodeBase.UI
 
         private async Task LoadSprite(string spriteName)
         {
-            var sprite = await AssetsService.Instance.GetSpriteById(spriteName);
+            var sprite = await AddressablesService.Instance.GetSpriteById(spriteName);
             itemImage.sprite = sprite;
         }
 
