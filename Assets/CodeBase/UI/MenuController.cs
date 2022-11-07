@@ -26,9 +26,9 @@ namespace CodeBase.UI
 
         private async void Awake()
         {
-            //TODO: move to bootstrap scene, addressables init inside!
+            //TODO: move to bootstrap scene, addressables/res init inside!
             _spritesAssets = await GetSpritesAssets();
-            
+
             SetLayout();
             CalcViewportSettings();
             SpawnCells();
@@ -73,7 +73,7 @@ namespace CodeBase.UI
         //TODO: move to to bootstrap scene;
         private async Task<List<string>> GetSpritesAssets()
         {
-            return await AddressablesService.Instance.GetAddressablesList<Sprite>();
+            return await IAssetsService.Instance.GetAssetsList<Sprite>();
         }
 
         private void SetGridLayout(float screenHeight)

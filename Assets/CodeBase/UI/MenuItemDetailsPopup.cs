@@ -28,7 +28,7 @@ namespace CodeBase.UI
 
         private async Task LoadSprite(string spriteName)
         {
-            var sprite = await AddressablesService.Instance.GetSpriteById(spriteName);
+            var sprite = await IAssetsService.Instance.GetSpriteById(spriteName);
             itemImage.sprite = sprite;
         }
 

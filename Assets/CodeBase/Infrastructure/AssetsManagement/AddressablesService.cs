@@ -16,8 +16,7 @@ namespace CodeBase.Infrastructure.AssetsManagement
 
         #region Singleton
 
-        private void Awake() => Instance ??= this;
-        public static AddressablesService Instance { get; private set; }
+        private void Awake() => IAssetsService.Instance ??= this;
 
         #endregion
 
@@ -54,7 +53,7 @@ namespace CodeBase.Infrastructure.AssetsManagement
             _spawnedSprites.Remove(id);
         }
 
-        public async Task<List<string>> GetAddressablesList<T>()
+        public async Task<List<string>> GetAssetsList<T>()
         {
             _allLocations ??= await GetAllLocations();
             return _allLocations
