@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -23,15 +25,21 @@ namespace CodeBase.UI
         [SerializeField] private GameObject itemSlopPrefab;
 
         private List<string> _spritesAssets;
+        private int _columns, _rows, _lastRow, _visibleRows;
+        private int _topCount, _bottomCount;
+        
 
         private async void Awake()
         {
             //TODO: move to bootstrap scene, addressables/res init inside!
             _spritesAssets = await GetSpritesAssets();
+            
+            _spritesAssets = _spritesAssets.Take(13+18).ToList();
 
             SetLayout();
             CalcViewportSettings();
-            SpawnCells();
+            
+            SpawnStartCells();
         }
 
         public void ScrollToStart() => 
@@ -50,24 +58,46 @@ namespace CodeBase.UI
 
         private void CalcViewportSettings()
         {
-            var columns = itemsContainer.RowCapacity();
-            var rows = itemsContainer.RowsCount(_spritesAssets.Count);
-            var lastRow = itemsContainer.CellsInLastRow(_spritesAssets.Count);
-            var visibleRows = itemsContainer.VisibleRows();
+            _columns = itemsContainer.RowCapacity();
+            _rows = itemsContainer.RowsCount(_spritesAssets.Count);
+            _lastRow = itemsContainer.CellsInLastRow(_spritesAssets.Count);
+            _visibleRows = itemsContainer.VisibleRows();
             
-            Debug.Log($"Grid is {rows} * {columns} with {lastRow} cells in last row and {visibleRows} visibleRows for {_spritesAssets.Count} cells in total");
+            Debug.Log($"Grid is {_rows} * {_columns} with {_lastRow} cells in last row and {_visibleRows} visibleRows for {_spritesAssets.Count} cells in total");
         }
 
-        private void SpawnCells()
+        private void SpawnCellsAll()
         {
-            for (var i = 0; i < _spritesAssets.Count; i++)
-            {
-                var spriteName = _spritesAssets[i];
-                var view = Instantiate(itemSlopPrefab, itemsContainer.transform).GetComponent<MenuItemView>();
-                
-                view.Construct(spriteName);
-                view.OnClick += _ => menuItemDetailsPopup.InitAndShow(spriteName, spriteName);
-            }
+            foreach (var t in _spritesAssets) 
+                SpawnCell(t);
+        }
+
+        private MenuItemView SpawnCell(string spriteName)
+        {         
+            var view = Instantiate(itemSlopPrefab, itemsContainer.transform).GetComponent<MenuItemView>();
+
+            view.Construct(spriteName);
+            view.OnClick += _ => menuItemDetailsPopup.InitAndShow(spriteName, spriteName);
+            
+            view.transform.name = spriteName;
+
+            return view;
+        }
+
+        private void SpawnStartCells()
+        {
+            _topCount = Mathf.Min(_spritesAssets.Count, _columns * (_visibleRows + 1));
+            
+            for (var i = 0; i < _topCount; i++) 
+                SpawnCell(_spritesAssets[i]);
+
+            if (_topCount == _spritesAssets.Count) return;
+
+            var remainder = Math.Max(_spritesAssets.Count - _topCount - _lastRow, 0);
+            _bottomCount = Math.Min(remainder, _columns * (_visibleRows + 1)) + _lastRow;
+            
+            for (var i = _bottomCount; i > 0; i--) 
+                SpawnCell(_spritesAssets[^i]);
         }
 
         //TODO: move to to bootstrap scene;
