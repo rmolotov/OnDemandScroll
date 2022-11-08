@@ -27,6 +27,8 @@ namespace CodeBase.UI
         private List<string> _spritesAssets;
         private int _columns, _rows, _lastRow, _visibleRows;
         private int _topCount, _bottomCount;
+
+        private int _firstView, _lastView;
         
 
         private async void Awake()
@@ -34,12 +36,15 @@ namespace CodeBase.UI
             //TODO: move to bootstrap scene, addressables/res init inside!
             _spritesAssets = await GetSpritesAssets();
             
-            _spritesAssets = _spritesAssets.Take(13+18).ToList();
+            //_spritesAssets = _spritesAssets.Take(2).ToList();
 
             SetLayout();
             CalcViewportSettings();
             
             SpawnStartCells();
+            //SpawnAllCells();
+
+            itemsContainer.GetComponentInParent<ScrollRect>().onValueChanged.AddListener(SpawnOnDemand);
         }
 
         public void ScrollToStart() => 
@@ -66,7 +71,7 @@ namespace CodeBase.UI
             Debug.Log($"Grid is {_rows} * {_columns} with {_lastRow} cells in last row and {_visibleRows} visibleRows for {_spritesAssets.Count} cells in total");
         }
 
-        private void SpawnCellsAll()
+        private void SpawnAllCells()
         {
             foreach (var t in _spritesAssets) 
                 SpawnCell(t);
@@ -98,12 +103,48 @@ namespace CodeBase.UI
             
             for (var i = _bottomCount; i > 0; i--) 
                 SpawnCell(_spritesAssets[^i]);
-        }
 
-        //TODO: move to to bootstrap scene;
+            var (t, b) = itemsContainer.VisibleRowsIndexes();
+            _firstView = Math.Clamp((t - 1) * (_columns), 0, _spritesAssets.Count);
+            _lastView = Math.Clamp((b + 1) * _columns, 0, _spritesAssets.Count) -1;
+            print($"scroll init {_firstView}, {_lastView}");
+        }
+        
         private async Task<List<string>> GetSpritesAssets()
         {
+            //TODO: move to to bootstrap scene;
             return await IAssetsService.Instance.GetAssetsList<Sprite>();
+        }
+
+        private void SpawnOnDemand(Vector2 updatedPos)
+        {
+            var (t, b) = itemsContainer.VisibleRowsIndexes();
+            if ((b + 1) * _columns > _lastView)
+            {
+                _firstView = Math.Clamp((t) * (_columns), 0, _spritesAssets.Count);
+                _lastView = Math.Clamp((b + 1) * _columns, 0, _spritesAssets.Count) -1;
+                print($"scroll down {_firstView}, {_lastView}");
+
+                if (_lastView > _topCount
+                    && _lastView < _spritesAssets.Count - _bottomCount
+                   )
+                {
+                    for (int i = 0; i < _columns; i++)
+                    {
+                        var view = SpawnCell(_spritesAssets[_topCount + i]);
+                        view.transform.SetSiblingIndex(_topCount + i);
+                    }
+
+                    _topCount += _columns;
+                }
+            }
+
+            // if ((t - 1) * _columns < _firstView)
+            // {
+            //     _firstView = Math.Clamp((t - 1) * _columns, 0, _spritesAssets.Count);
+            //     _lastView = Math.Clamp((b + 1) * _columns, 0, _spritesAssets.Count);
+            //     print($"scroll up {_firstView}, {_lastView}");
+            // }
         }
 
         private void SetGridLayout(float screenHeight)

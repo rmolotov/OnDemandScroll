@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace CodeBase.Extensions
@@ -61,6 +62,23 @@ namespace CodeBase.Extensions
                     + layoutGroup.spacing.y;
             
             return 1 + Mathf.CeilToInt(h / (layoutGroup.cellSize.y + layoutGroup.spacing.y));
+        }
+
+        public static (int, int) VisibleRowsIndexes(this GridLayoutGroup layoutGroup)
+        {
+            var scrollRect = layoutGroup.GetComponentInParent<ScrollRect>();
+            if (scrollRect == null)
+            {
+                Debug.LogWarning("Target GridLayoutGroup has no ScrollRect in parent RectTransform");
+                return (-1, -1);
+            }
+
+            var v = Mathf.Clamp01(scrollRect.normalizedPosition.y);
+            var c = (int)((1 - v) * layoutGroup.RowsCount());
+            var t = Mathf.Clamp(c - layoutGroup.VisibleRows() / 2, 0, c - layoutGroup.VisibleRows() / 2);
+            var b = Mathf.Clamp(c + layoutGroup.VisibleRows() / 2, c + layoutGroup.VisibleRows() / 2, layoutGroup.RowsCount());
+
+            return (t,b);
         }
 
         #endregion
