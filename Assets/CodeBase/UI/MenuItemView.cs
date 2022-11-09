@@ -17,6 +17,7 @@ namespace CodeBase.UI
         public async void Construct(string spriteName)
         {
             itemImage.sprite = await IAssetsService.Instance.GetSpriteById(spriteName);
+            itemButton.onClick.RemoveAllListeners();
             itemButton.onClick.AddListener(
                 () => OnClick?.Invoke(spriteName)
             );

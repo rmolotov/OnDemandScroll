@@ -61,7 +61,7 @@ namespace CodeBase.Extensions
                     - layoutGroup.padding.bottom
                     + layoutGroup.spacing.y;
             
-            return 1 + Mathf.CeilToInt(h / (layoutGroup.cellSize.y + layoutGroup.spacing.y));
+            return Mathf.CeilToInt(h / (layoutGroup.cellSize.y + layoutGroup.spacing.y));
         }
 
         public static (int, int) VisibleRowsIndexes(this GridLayoutGroup layoutGroup)
@@ -74,11 +74,15 @@ namespace CodeBase.Extensions
             }
 
             var v = Mathf.Clamp01(scrollRect.normalizedPosition.y);
-            var c = (int)((1 - v) * layoutGroup.RowsCount());
+            var c = (int) ((1 - v) * layoutGroup.RowsCount());
             var t = Mathf.Clamp(c - layoutGroup.VisibleRows() / 2, 0, c - layoutGroup.VisibleRows() / 2);
-            var b = Mathf.Clamp(c + layoutGroup.VisibleRows() / 2, c + layoutGroup.VisibleRows() / 2, layoutGroup.RowsCount());
+            var b = Mathf.Clamp(c + layoutGroup.VisibleRows() / 2, c + layoutGroup.VisibleRows() / 2,
+                layoutGroup.RowsCount());
 
-            return (t,b);
+            if (t == 0) b = layoutGroup.VisibleRows();
+            if (b == layoutGroup.RowsCount()) t = layoutGroup.RowsCount() - layoutGroup.VisibleRows();
+
+            return (t, b);
         }
 
         #endregion

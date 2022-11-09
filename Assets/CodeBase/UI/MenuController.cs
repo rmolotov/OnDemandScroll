@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -29,6 +29,9 @@ namespace CodeBase.UI
         private int _topCount, _bottomCount;
 
         private int _firstView, _lastView;
+
+        private float _prevPosY;
+        private bool _spawnDown, _spawnUp;
         
 
         private async void Awake()
@@ -44,7 +47,7 @@ namespace CodeBase.UI
             SpawnStartCells();
             //SpawnAllCells();
 
-            itemsContainer.GetComponentInParent<ScrollRect>().onValueChanged.AddListener(SpawnOnDemand);
+            scrollView.onValueChanged.AddListener(SpawnOnDemand);
         }
 
         public void ScrollToStart() => 
@@ -119,32 +122,99 @@ namespace CodeBase.UI
         private void SpawnOnDemand(Vector2 updatedPos)
         {
             var (t, b) = itemsContainer.VisibleRowsIndexes();
-            if ((b + 1) * _columns > _lastView)
+            
+            //scroll down
+            if (updatedPos.y < _prevPosY && Mathf.Clamp((b + 1) * _columns, 0, _spritesAssets.Count) > _lastView + 1)
             {
-                _firstView = Math.Clamp((t) * (_columns), 0, _spritesAssets.Count);
-                _lastView = Math.Clamp((b + 1) * _columns, 0, _spritesAssets.Count) -1;
+                _prevPosY = updatedPos.y;
+                
+                if (_spawnUp)
+                {
+                    _spawnUp = false;
+                    return;
+                }
+                
+                CalcPageBounds(t, b);
                 print($"scroll down {_firstView}, {_lastView}");
 
-                if (_lastView > _topCount
-                    && _lastView < _spritesAssets.Count - _bottomCount
-                   )
+                //release sprites above:
+                for (int i = _firstView-_columns; i < _firstView; i++)
                 {
-                    for (int i = 0; i < _columns; i++)
-                    {
-                        var view = SpawnCell(_spritesAssets[_topCount + i]);
-                        view.transform.SetSiblingIndex(_topCount + i);
-                    }
+                    itemsContainer.transform.GetChild(i).GetComponent<Image>().sprite = null;
+                    IAssetsService.Instance.ReleaseSprite(_spritesAssets[i]);
+                }
+
+                //spawn cells under:
+                if (_lastView > _topCount && _lastView < _spritesAssets.Count - _bottomCount)
+                {
+                    for (var i = 0; i < _columns; i++)
+                        SpawnCell(_spritesAssets[_topCount + i])
+                            .transform.SetSiblingIndex(_topCount + i);
 
                     _topCount += _columns;
+                    _prevPosY = scrollView.normalizedPosition.y;
+                    _spawnDown = true;
+                }
+                // or re-init existing
+                else
+                {
+                    for (var i = _lastView+1; i < _lastView+1+_columns && i < itemsContainer.transform.childCount; i++)
+                    {
+                        itemsContainer.transform.GetChild(i)
+                            .GetComponent<MenuItemView>()
+                            .Construct(_spritesAssets[i]);
+                    }  
+                }
+                
+                return;
+            }
+
+            //scroll up
+            if (updatedPos.y > _prevPosY && Mathf.Clamp((t) * _columns, 0, _spritesAssets.Count) < _firstView)
+            {
+                _prevPosY = updatedPos.y;
+                
+                if (_spawnDown)
+                {
+                    _spawnDown = false;
+                    return;
+                }
+
+                CalcPageBounds(t, b);
+                print($"scroll up {_firstView}, {_lastView}");
+
+                //release sprites under:
+                for (var i = _lastView+1; i < _lastView+1+_columns; i++)
+                {
+                    itemsContainer.transform.GetChild(i).GetComponent<Image>().sprite = null;
+                    IAssetsService.Instance.ReleaseSprite(_spritesAssets[i]);
+                }
+                
+                //spawn cells above:
+                if (false)
+                {
+                    //TODO
+                    _spawnUp = true;
+                }
+                // or re-init existing
+                else
+                {
+                    for (var i = _firstView - _columns; i < _firstView && i >= 0; i++)
+                    {
+                        itemsContainer.transform.GetChild(i)
+                            .GetComponent<MenuItemView>()
+                            .Construct(_spritesAssets[i]);
+                    }  
                 }
             }
 
-            // if ((t - 1) * _columns < _firstView)
-            // {
-            //     _firstView = Math.Clamp((t - 1) * _columns, 0, _spritesAssets.Count);
-            //     _lastView = Math.Clamp((b + 1) * _columns, 0, _spritesAssets.Count);
-            //     print($"scroll up {_firstView}, {_lastView}");
-            // }
+            _prevPosY = updatedPos.y;
+        }
+
+        private void CalcPageBounds(int t, int b)
+        {
+            _firstView = Math.Clamp((t) * (_columns), 0, _spritesAssets.Count);
+            _lastView = Math.Clamp((b + 1) * _columns, 0, _spritesAssets.Count) - 1;
         }
 
         private void SetGridLayout(float screenHeight)
@@ -163,6 +233,13 @@ namespace CodeBase.UI
         {
             ((RectTransform) buttonsContainer.transform).anchoredPosition = ButtonPadding * screenHeight * new Vector2(-1, 1);
             buttonsContainer.spacing = ButtonPadding * screenHeight;
+        }
+        
+        private IEnumerator WaitForFramesCoroutine(int framesToWait = 1)
+        {
+            //TODO: move to separated i-service
+            for (var i = 0; i < framesToWait; i++)
+                yield return null;
         }
     }
 }

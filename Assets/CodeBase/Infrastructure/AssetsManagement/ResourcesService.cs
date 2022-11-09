@@ -22,16 +22,16 @@ namespace CodeBase.Infrastructure.AssetsManagement
         [Header("Resources subfolders")]
         [SerializeField] private string spritesFolder = "images";
 
-        private Dictionary<string, Task<Sprite>> _spawnedSprites;
+        private Dictionary<string, Sprite> _spawnedSprites;
 
 
         [ItemCanBeNull]
         public async Task<Sprite> GetSpriteById(string id)
         {
-            _spawnedSprites ??= new Dictionary<string, Task<Sprite>>();
+            _spawnedSprites ??= new Dictionary<string, Sprite>();
             
             if (_spawnedSprites.ContainsKey(id))
-                return await _spawnedSprites[id];
+                return await Task.FromResult(_spawnedSprites[id]);
 
             var request = Resources.LoadAsync<Sprite>(spritesFolder + $"/{id}");
 
@@ -40,22 +40,23 @@ namespace CodeBase.Infrastructure.AssetsManagement
                 while (!request.isDone) await Task.Delay(10);
             }, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.FromCurrentSynchronizationContext());
 
-            var result = Task.FromResult(request != null
+            var result = request != null
                 ? (Sprite) request.asset
-                : spritePlaceholder
-            );
+                : spritePlaceholder;
 
             _spawnedSprites.Add(id, result);
 
-            return await result;
+            return await Task.FromResult(result);
         }
 
         public void ReleaseSprite(string id)
         {
             if (!_spawnedSprites.ContainsKey(id)) return;
-            
-            Resources.UnloadAsset(_spawnedSprites[id].Result);
+
+            var s = _spawnedSprites[id];
             _spawnedSprites.Remove(id);
+            Resources.UnloadAsset(s);
+            Resources.UnloadUnusedAssets();
         }
 
         public async Task<List<string>> GetAssetsList<T>()
