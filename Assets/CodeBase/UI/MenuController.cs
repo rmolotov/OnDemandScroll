@@ -25,6 +25,7 @@ namespace CodeBase.UI
         private List<string> _spritesAssets;
         private int _columns, _rows, _lastRow, _visibleRows;
         private int _topCount, _bottomCount;
+        private int _keepTopCount, _keepBottomCount;
 
         private int _firstView, _lastView;
 
@@ -91,7 +92,7 @@ namespace CodeBase.UI
 
         private void SpawnStartCells()
         {
-            _topCount = Mathf.Min(_spritesAssets.Count, _columns * (_visibleRows + 1));
+            _keepTopCount = _topCount = Mathf.Min(_spritesAssets.Count, _columns * _visibleRows);
             
             for (var i = 0; i < _topCount; i++) 
                 SpawnCell(_spritesAssets[i]);
@@ -99,7 +100,7 @@ namespace CodeBase.UI
             if (_topCount == _spritesAssets.Count) return;
 
             var remainder = Math.Max(_spritesAssets.Count - _topCount - _lastRow, 0);
-            _bottomCount = Math.Min(remainder, _columns * (_visibleRows + 1)) + _lastRow;
+            _keepBottomCount = _bottomCount = Math.Min(remainder, _columns * (_visibleRows + 1)) + _lastRow;
             
             for (var i = _bottomCount; i > 0; i--) 
                 SpawnCell(_spritesAssets[^i]);
@@ -143,7 +144,8 @@ namespace CodeBase.UI
                 // or re-init existing
                 else
                 {
-                    ReConstructViews(_lastView + 1, _lastView + 1 + _columns);
+                    ReConstructViews(_lastView + 1 - _columns, _lastView + 1);
+                    _prevPosY = updatedPos.y;
                 }
                 
                 return;
@@ -164,7 +166,7 @@ namespace CodeBase.UI
                 print($"scroll up {_firstView}, {_lastView}");
 
                 //release sprites under:
-                ReleaseSprites(_lastView + 1, _lastView);
+                ReleaseSprites(_lastView + 1, _lastView + 1 + _columns);
 
                 //spawn cells above:
                 if (_firstView < _spritesAssets.Count - _bottomCount && _firstView > _topCount)
@@ -181,6 +183,7 @@ namespace CodeBase.UI
                 else
                 {
                     ReConstructViews(_firstView, _firstView + _columns);
+                    _prevPosY = updatedPos.y;
                 }
             }
 
@@ -200,6 +203,9 @@ namespace CodeBase.UI
 
         private void ReleaseSprites(int startIndex, int endIndex)
         {
+            if (startIndex <= _keepTopCount || startIndex >= _spritesAssets.Count - _keepBottomCount)
+                return;
+
             for (var i = startIndex; i < endIndex; i++)
             {
                 itemsContainer.transform.GetChild(i).GetComponent<Image>().sprite = null;

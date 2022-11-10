@@ -64,7 +64,7 @@ namespace CodeBase.Extensions
             return Mathf.CeilToInt(h / (layoutGroup.cellSize.y + layoutGroup.spacing.y));
         }
 
-        public static (int, int) VisibleRowsIndexes(this GridLayoutGroup layoutGroup)
+        public static (int, int) VisibleRowsIndexes(this GridLayoutGroup layoutGroup, int itemsCount =-1)
         {
             var scrollRect = layoutGroup.GetComponentInParent<ScrollRect>();
             if (scrollRect == null)
@@ -74,13 +74,28 @@ namespace CodeBase.Extensions
             }
 
             var v = Mathf.Clamp01(scrollRect.normalizedPosition.y);
-            var c = (int) ((1 - v) * layoutGroup.RowsCount());
+            
+            // bound cases:
+            switch (v)
+            {
+                case > 1 - Constants.Epsilon:
+                    return (0, layoutGroup.VisibleRows());
+                case < 0 + Constants.Epsilon:
+                    return (
+                        layoutGroup.RowsCount(itemsCount) - layoutGroup.VisibleRows(),
+                        layoutGroup.RowsCount(itemsCount)
+                    );
+            }
+
+            var c = (int) ((1 - v) * layoutGroup.RowsCount(itemsCount));
             var t = Mathf.Clamp(c - layoutGroup.VisibleRows() / 2, 0, c - layoutGroup.VisibleRows() / 2);
             var b = Mathf.Clamp(c + layoutGroup.VisibleRows() / 2, c + layoutGroup.VisibleRows() / 2,
-                layoutGroup.RowsCount());
+                layoutGroup.RowsCount(itemsCount));
 
-            if (t == 0) b = layoutGroup.VisibleRows();
-            if (b == layoutGroup.RowsCount()) t = layoutGroup.RowsCount() - layoutGroup.VisibleRows();
+            if (t == 0) 
+                b = layoutGroup.VisibleRows();
+            if (b == layoutGroup.RowsCount(itemsCount)) 
+                t = layoutGroup.RowsCount(itemsCount) - layoutGroup.VisibleRows();
 
             return (t, b);
         }
