@@ -37,13 +37,13 @@ namespace CodeBase.UI
         {
             //TODO: move to bootstrap scene, addressables/res init inside!
             _spritesAssets = await IAssetsService.Instance.GetAssetsList<Sprite>();
-            //_spritesAssets = _spritesAssets.Take(2).ToList();
+            //_spritesAssets = _spritesAssets.Take(2).ToList(); // for test
 
             SetLayout();
             CalcViewportSettings();
             
             SpawnStartCells();
-            //SpawnAllCells();
+            //SpawnAllCells(); // for test
 
             scrollView.onValueChanged.AddListener(SpawnOnDemand);
         }
@@ -117,36 +117,11 @@ namespace CodeBase.UI
             if (updatedPos.y < _prevPosY && Mathf.Clamp((b + 1) * _columns, 0, _spritesAssets.Count) > _lastView + 1)
             {
                 _prevPosY = updatedPos.y;
-                
-                if (_spawnUp)
-                {
-                    _spawnUp = false;
-                    return;
-                }
-                
-                (_firstView, _lastView) = itemsContainer.CalcPageBounds(_spritesAssets.Count);
-                print($"scroll down {_firstView}, {_lastView}");
 
-                //release sprites above:
-                ReleaseSprites(_firstView - _columns, _firstView);
-
-                //spawn cells under:
-                if (_lastView > _topCount && _lastView < _spritesAssets.Count - _bottomCount)
-                {
-                    for (var i = 0; i < _columns; i++)
-                        SpawnCell(_spritesAssets[_topCount + i])
-                            .transform.SetSiblingIndex(_topCount + i);
-
-                    _topCount += _columns;
-                    _prevPosY = scrollView.normalizedPosition.y;
-                    _spawnDown = true;
-                }
-                // or re-init existing
+                if (!_spawnUp)
+                    ScrollDown();
                 else
-                {
-                    ReConstructViews(_lastView + 1 - _columns, _lastView + 1);
-                    _prevPosY = updatedPos.y;
-                }
+                    _spawnUp = false;
                 
                 return;
             }
@@ -155,39 +130,60 @@ namespace CodeBase.UI
             if (updatedPos.y > _prevPosY && Mathf.Clamp(t * _columns, 0, _spritesAssets.Count) < _firstView)
             {
                 _prevPosY = updatedPos.y;
-                
-                if (_spawnDown)
-                {
-                    _spawnDown = false;
-                    return;
-                }
-                
-                (_firstView, _lastView) = itemsContainer.CalcPageBounds(_spritesAssets.Count);
-                print($"scroll up {_firstView}, {_lastView}");
 
-                //release sprites under:
-                ReleaseSprites(_lastView + 1, _lastView + 1 + _columns);
-
-                //spawn cells above:
-                if (_firstView < _spritesAssets.Count - _bottomCount && _firstView > _topCount)
-                {
-                    for (var i = _firstView; i < _columns; i++)
-                        SpawnCell(_spritesAssets[_firstView + i])
-                            .transform.SetSiblingIndex(_firstView + i);
-
-                    _bottomCount += _columns;
-                    _prevPosY = scrollView.normalizedPosition.y;
-                    _spawnUp = true;
-                }
-                // or re-init existing
+                if (!_spawnDown)
+                    ScrollUp();
                 else
-                {
-                    ReConstructViews(_firstView, _firstView + _columns);
-                    _prevPosY = updatedPos.y;
-                }
+                    _spawnDown = false;
             }
 
+            // else just upd value
             _prevPosY = updatedPos.y;
+        }
+
+        private void ScrollUp()
+        {
+            (_firstView, _lastView) = itemsContainer.CalcPageBounds(_spritesAssets.Count);
+            print($"scroll up {_firstView}, {_lastView}");
+            
+            ReleaseSprites(_lastView + 1, _lastView + 1 + _columns);
+
+            if (_firstView < _spritesAssets.Count - _bottomCount && _firstView > _topCount)
+                SpawnNewLine(_firstView, _columns);
+            else
+                ReConstructViews(_firstView, _firstView + _columns);
+        }
+
+        private void ScrollDown()
+        {
+            (_firstView, _lastView) = itemsContainer.CalcPageBounds(_spritesAssets.Count);
+            print($"scroll down {_firstView}, {_lastView}");
+
+            ReleaseSprites(_firstView - _columns, _firstView);
+
+            if (_lastView > _topCount && _lastView < _spritesAssets.Count - _bottomCount)
+                SpawnNewLine(_topCount, _columns, true);
+            else
+                ReConstructViews(_lastView + 1 - _columns, _lastView + 1);
+        }
+
+        private void SpawnNewLine(int start, int count, bool isUnder = false)
+        {
+            for (var i = isUnder ? 0 : start; i < count; i++)
+                SpawnCell(_spritesAssets[start + i])
+                    .transform.SetSiblingIndex(start + i);
+
+            if (isUnder)
+            {
+                _topCount += _columns;
+                _spawnDown = true;
+            }
+            else
+            {
+                _bottomCount += _columns;
+                _spawnUp = true;
+            }
+            _prevPosY = scrollView.normalizedPosition.y;
         }
 
         private void ReConstructViews(int startIndex, int endIndex)
