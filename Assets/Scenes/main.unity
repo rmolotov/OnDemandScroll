@@ -1513,6 +1513,7 @@ MonoBehaviour:
   itemsContainer: {fileID: 1821981599}
   scrollView: {fileID: 1447158693}
   buttonsContainer: {fileID: 1388794809}
+  scrollToEndButton: {fileID: 357044295}
   itemSlopPrefab: {fileID: 1011121715171738845, guid: 787d1134990c9c2429008be6efb27a7d, type: 3}
 --- !u!1 &1529772649
 GameObject:

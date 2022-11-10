@@ -20,6 +20,7 @@ namespace CodeBase.UI
         [SerializeField] private GridLayoutGroup itemsContainer;
         [SerializeField] private ScrollRect scrollView;
         [SerializeField] private VerticalLayoutGroup buttonsContainer;
+        [SerializeField] private Button scrollToEndButton;
         [SerializeField] private GameObject itemSlopPrefab;
 
         private List<string> _spritesAssets;
@@ -107,6 +108,8 @@ namespace CodeBase.UI
 
             (_firstView, _lastView) = itemsContainer.CalcPageBounds(_spritesAssets.Count);
             print($"scroll init {_firstView}, {_lastView}");
+
+            scrollToEndButton.interactable = _topCount + _bottomCount == _spritesAssets.Count;
         }
 
         private void SpawnOnDemand(Vector2 updatedPos)
@@ -184,6 +187,9 @@ namespace CodeBase.UI
                 _spawnUp = true;
             }
             _prevPosY = scrollView.normalizedPosition.y;
+            
+            //enable fast scroll to end only when all of views are ready
+            scrollToEndButton.interactable = itemsContainer.transform.childCount == _spritesAssets.Count;
         }
 
         private void ReConstructViews(int startIndex, int endIndex)
