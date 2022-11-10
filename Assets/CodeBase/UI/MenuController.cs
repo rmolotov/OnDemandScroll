@@ -167,15 +167,20 @@ namespace CodeBase.UI
                 ReleaseSprites(_lastView + 1, _lastView);
 
                 //spawn cells above:
-                if (false)
+                if (_firstView < _spritesAssets.Count - _bottomCount && _firstView > _topCount)
                 {
-                    //TODO
+                    for (var i = _firstView; i < _columns; i++)
+                        SpawnCell(_spritesAssets[_firstView + i])
+                            .transform.SetSiblingIndex(_firstView + i);
+
+                    _bottomCount += _columns;
+                    _prevPosY = scrollView.normalizedPosition.y;
                     _spawnUp = true;
                 }
                 // or re-init existing
                 else
                 {
-                    ReConstructViews(_firstView - _columns, _firstView);
+                    ReConstructViews(_firstView, _firstView + _columns);
                 }
             }
 
