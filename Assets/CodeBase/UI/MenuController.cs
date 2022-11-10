@@ -92,7 +92,7 @@ namespace CodeBase.UI
 
         private void SpawnStartCells()
         {
-            _keepTopCount = _topCount = Mathf.Min(_spritesAssets.Count, _columns * _visibleRows);
+            _keepTopCount = _topCount = Mathf.Min(_spritesAssets.Count, _columns * (_visibleRows+1));
             
             for (var i = 0; i < _topCount; i++) 
                 SpawnCell(_spritesAssets[i]);
