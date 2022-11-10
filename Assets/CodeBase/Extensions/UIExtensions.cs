@@ -84,6 +84,17 @@ namespace CodeBase.Extensions
 
             return (t, b);
         }
+        
+        public static (int, int) CalcPageBounds(this GridLayoutGroup layoutGroup, int maxItemsCount)
+        {
+            var columns = layoutGroup.RowCapacity();
+            var (t, b) = layoutGroup.VisibleRowsIndexes();
+            
+            var firstInd = Math.Clamp(t * (columns), 0, maxItemsCount);
+            var lastInd = Math.Clamp((b + 1) * columns, 0, maxItemsCount) - 1;
+
+            return (firstInd, lastInd);
+        }
 
         #endregion
     }
