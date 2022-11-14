@@ -25,7 +25,8 @@ namespace CodeBase.Extensions
                     - layoutGroup.padding.right
                     + layoutGroup.spacing.x;
             
-            return Mathf.FloorToInt(w / (layoutGroup.cellSize.x + layoutGroup.spacing.x));
+            var c = Mathf.FloorToInt(w / (layoutGroup.cellSize.x + layoutGroup.spacing.x));
+            return Mathf.Clamp(c, 1, c);
         }
 
         public static int RowsCount(this GridLayoutGroup layoutGroup, int itemsCount =-1)
