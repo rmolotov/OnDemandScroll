@@ -70,7 +70,7 @@ namespace CodeBase.UI
             _lastRow = itemsContainer.CellsInLastRow(_spritesAssets.Count);
             _visibleRows = itemsContainer.VisibleRows();
             
-            Debug.Log($"Grid is {_rows} * {_columns} with {_lastRow} cells in last row and {_visibleRows} visibleRows for {_spritesAssets.Count} cells in total");
+            print($"Grid is {_rows} * {_columns} with {_lastRow} cells in last row and {_visibleRows} visibleRows for {_spritesAssets.Count} cells in total");
         }
 
         private MenuItemView SpawnCell(string spriteName)

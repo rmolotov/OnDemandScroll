@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CodeBase.Utilities.Build;
 using JetBrains.Annotations;
 using UnityEngine;
 
@@ -17,6 +17,8 @@ namespace CodeBase.Infrastructure.AssetsManagement
 
         #endregion
 
+        private const string FilesListName = "SpitesNames";
+        
         [SerializeField] private Sprite spritePlaceholder;
         
         [Header("Resources subfolders")]
@@ -61,13 +63,19 @@ namespace CodeBase.Infrastructure.AssetsManagement
 
         public async Task<List<string>> GetAssetsList<T>()
         {
+#if UNITY_EDITOR
             var path = $"{Application.dataPath}/Resources/{spritesFolder}/";
             
             var filesList = Directory.GetFiles(path)
-                .Where(s => !s.EndsWith(".meta"))
-                .Select(s => s[(s.LastIndexOf('/')+1)..s.LastIndexOf(".", StringComparison.Ordinal)])
+                .Where(x => Path.GetExtension(x) != ".meta")
+                .Select(Path.GetFileNameWithoutExtension)
                 .ToList();
             return await Task.FromResult(filesList);
+#endif
+            var fileNamesAsset = Resources.Load<TextAsset>(FilesListName);
+            var fileInfoLoaded = JsonUtility.FromJson<FileNameInfo>(fileNamesAsset.text);
+            
+            return await Task.FromResult(fileInfoLoaded.fileNames.ToList());
         }
     }
 }
